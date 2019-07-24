@@ -15,7 +15,7 @@ public class SMSCOMMS
         this.serialPort.PortName = comPort;
         this.serialPort.BaudRate = 9600;
         this.serialPort.Parity = Parity.None;
-        this.serialPort.DataBits = 8;iji
+        this.serialPort.DataBits = 8;
         this.serialPort.StopBits = StopBits.One;
         this.serialPort.Handshake = Handshake.RequestToSend;
         this.serialPort.DtrEnable = true;
