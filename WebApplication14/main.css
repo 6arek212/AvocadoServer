@@ -1,0 +1,43 @@
+﻿* {
+    padding: 0;
+    margin: 0;
+    font-family: 'Arial Rounded MT';
+}
+
+
+
+.txtBox {
+    border: 0;
+    border-radius: 32px;
+    width: 10%;
+    margin: 16px;
+    padding: 10px;
+    background: #38d858;
+    font-size: 16px;
+    color: azure;
+}
+
+.porfilePhoto {
+    width: 50px;
+    height: 50px;
+    display: inline;
+    border-radius: 30px
+}
+
+.postLayout {
+    background: #e6e8ed;
+    width: 40%;
+    margin: 0 auto;
+    border-radius: 9px;
+    margin-top: 50px;
+    padding: 16px;
+}
+
+.h3 {
+    display: inline;
+}
+
+.postText {
+    text-align: center;
+    font-size: 16px;
+}
