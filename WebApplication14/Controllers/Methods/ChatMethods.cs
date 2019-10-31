@@ -285,8 +285,8 @@ namespace WebApplication14.Controllers.Methods
         public static Status OnDeletingChat(int chat_id,int user_id)
         {
             String query = "declare @receiver int,@sender int " +
-                "set @receiver=(select chat_receiver_id from chats_tbl) " +
-                "set @sender=(select chat_sender_id from chats_tbl) " +
+                "set @receiver=(select chat_receiver_id from chats_tbl where chat_id=@chat_id) " +
+                "set @sender=(select chat_sender_id from chats_tbl where chat_id=@chat_id) " +
                 "if(@user_id=@sender) " +
                 "begin " +
                 "update chats_tbl set chat_removed_sender=1 where chat_id=@chat_id " +

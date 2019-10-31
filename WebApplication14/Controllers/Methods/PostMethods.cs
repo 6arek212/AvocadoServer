@@ -283,8 +283,8 @@ namespace WebApplication14.Controllers
                  ") as image_urls " +
                  ",saved_posts.saved_post_id " +
                  "" +
-                 "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                  "from posts_tbl " +
+                 "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                  "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                  "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                  "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +

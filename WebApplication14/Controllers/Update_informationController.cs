@@ -19,9 +19,9 @@ namespace WebApplication14.Controllers
 
         [Route("api/Update/update_emailaddress")]
         [HttpGet]
-        public Status update_emailaddress(String userid, String emailaddress)
+        public Status update_emailaddress(String userid, String emailaddress,String password)
         {
-            return Update_informationMethods.update_emailaddress(userid, emailaddress);
+            return Update_informationMethods.update_emailaddress(userid, emailaddress, password);
         }
 
         [Route("api/Update/update_phonenumber")]

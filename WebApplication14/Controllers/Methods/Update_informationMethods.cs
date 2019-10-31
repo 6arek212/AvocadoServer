@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -22,17 +23,42 @@ namespace WebApplication14.Controllers.Methods
             return ConnectionInit.go_to_insertingToDB(query, command);
         }
 
-        public static Status update_emailaddress(String userid, String emailaddress)
+        public static Status update_emailaddress(String userid, String emailaddress,String password)
         {
-            String query = "update users_tbl set user_email=@emailaddress where user_id=@userid";
+            
+            String query = "" +
+                "if(CONVERT(VARCHAR, (select user_passsword from users_tbl where user_id = @userid))=@password) " +
+                "begin " +
+                "update users_tbl set user_email=@emailaddress where user_id=@userid " +
+                "end " +
+                "" +
+                "else " +
+                "begin " +
+                "select 'incorrect password' " +
+                "end ";
+
             SqlCommand command = new SqlCommand();
 
             //parameters
             command.Parameters.AddWithValue("@emailaddress", emailaddress);
-            command.Parameters.AddWithValue("@userid", int.Parse(userid));
+            command.Parameters.AddWithValue("@userid", userid);
+            command.Parameters.AddWithValue("@password", password);
 
-            return ConnectionInit.go_to_insertingToDB(query, command);
+            DataTable dt = getDataTable(query, command);
+            Status st = new Status();
+            if (dt.Rows.Count > 0)
+            {
+                st.State = 0;
+                st.Exception = "password not match";
+            }
+            else
+            {
+                st.State = 1;
+            }
+            return st;
         }
+
+
 
         public static Status update_phonenumber(String userid, String phonenumber)
         {
@@ -46,5 +72,19 @@ namespace WebApplication14.Controllers.Methods
             return ConnectionInit.go_to_insertingToDB(query, command);
 
         }
+
+
+
+        private static DataTable getDataTable(string query, SqlCommand cmd)
+        {
+            SqlConnection con = new SqlConnection(ConnectionInit.ConnectionString);
+            DataTable dt = new DataTable();
+            cmd.Connection = con;
+            cmd.CommandText = query;
+            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+            adapter.Fill(dt);
+            return dt;
+        }
+
     }
 }
