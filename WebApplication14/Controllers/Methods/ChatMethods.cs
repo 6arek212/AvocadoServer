@@ -1,6 +1,7 @@
 ﻿using Json.Net;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -134,8 +135,8 @@ namespace WebApplication14.Controllers.Methods
                 "left join users_tbl on (users_tbl.user_id=chats_tbl.chat_sender_id and chats_tbl.chat_sender_id!=@user_id) " +
                 "or(users_tbl.user_id=chats_tbl.chat_receiver_id and chats_tbl.chat_receiver_id!=@user_id) " +
                 "where " +
-                "(chat_sender_id=@user_id or chat_receiver_id=@user_id) and  " +
-                "((chat_sender_id=@user_id and chat_removed_sender=0) or (chat_receiver_id=@user_id and  chat_removed_receiver=0)) " +
+                "(chat_sender_id=@user_id and (chat_sender_id=@user_id and chat_removed_sender=0) ) or   " +
+                "( chat_receiver_id=@user_id and (chat_receiver_id=@user_id and  chat_removed_receiver=0))  " +
                 "order by chat_datetime_created DESC";
 
             /*"order by chat_datetime_created DESC " +
@@ -171,6 +172,13 @@ namespace WebApplication14.Controllers.Methods
             return universalRetriver(query, cmd, GET_CHATS);
         }
 
+
+
+
+
+
+
+        
 
 
 
@@ -274,7 +282,58 @@ namespace WebApplication14.Controllers.Methods
         }
 
 
+        public static Status OnDeletingChat(int chat_id,int user_id)
+        {
+            String query = "declare @receiver int,@sender int " +
+                "set @receiver=(select chat_receiver_id from chats_tbl) " +
+                "set @sender=(select chat_sender_id from chats_tbl) " +
+                "if(@user_id=@sender) " +
+                "begin " +
+                "update chats_tbl set chat_removed_sender=1 where chat_id=@chat_id " +
+                "end " +
+                "else " +
+                "begin " +
+                "update chats_tbl set chat_removed_receiver=1 where chat_id=@chat_id " +
+                "end " +
+                "if((select chat_removed_sender from chats_tbl where chat_id=@chat_id)=1 and (select chat_removed_receiver from chats_tbl where chat_id=@chat_id)=1) " +
+                "begin " +
+                "delete from chat_messages_tbl where chat_id=@chat_id " +
+                "delete from chats_tbl where chat_id=@chat_id " +
+                "end ";
 
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Parameters.AddWithValue("@user_id", user_id);
+            cmd.Parameters.AddWithValue("@chat_id", chat_id);
+
+            Status status = new Status();
+
+            try
+            {
+                getDataTable(query, cmd);
+                status.State = 1;
+            }
+            catch (Exception e)
+            {
+                status.State = -1;
+                status.Exception = e.Message;
+            }
+            return status;
+        }
+
+
+
+
+        private static DataTable getDataTable(String query, SqlCommand cmd)
+        {
+            SqlConnection con = new SqlConnection(ConnectionInit.ConnectionString);
+            DataTable dt = new DataTable();
+            cmd.Connection = con;
+            cmd.CommandText = query;
+            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+            adapter.Fill(dt);
+            return dt;
+        }
 
 
         private static Message initMessage(SqlDataReader reader)

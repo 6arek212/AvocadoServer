@@ -64,13 +64,6 @@ namespace WebApplication14.Controllers.Methods
             command.Parameters.AddWithValue("@user_location_swich", false);
             command.Parameters.AddWithValue("@account_is_private", false);
             command.Parameters.AddWithValue("@user_is_online", false);
-
-
-
-            //birth date willl has a null starting value
-            //command.Parameters.AddWithValue("@birth", );
-            //command.Parameters.AddWithValue("@gender", );
-
             command.Parameters.AddWithValue("@profile_photo", PROFILE_PHOTO);
             command.Parameters.AddWithValue("@post_count", POST_COUNT);
             command.Parameters.AddWithValue("@photos_count", PHOTOS_COUNT);

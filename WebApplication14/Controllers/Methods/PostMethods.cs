@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Json.Net;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -130,7 +132,7 @@ namespace WebApplication14.Controllers
                 "begin " +
                 "select users_tbl.user_first_name,users_tbl.user_last_name,users_tbl.user_birth_date,users_tbl.user_profile_photo " +
                 ",users_tbl.user_posts_count,users_tbl.user_photos_count,users_tbl.user_connection_count,users_tbl.user_reputation " +
-                ",users_tbl.user_city,users_tbl.user_country,users_tbl.user_job,users_tbl.account_is_private,users_tbl.user_is_online " +
+                ",users_tbl.user_city,users_tbl.user_country,users_tbl.user_job,users_tbl.account_is_private,users_tbl.user_is_online,user_bio " +
                 "from users_tbl where user_id=@user_id " +
                 "end " +
                 "" +
@@ -139,7 +141,7 @@ namespace WebApplication14.Controllers
                 "select users_tbl.user_first_name,users_tbl.user_last_name,users_tbl.user_birth_date,users_tbl.user_profile_photo " +
                 ",users_tbl.user_posts_count,users_tbl.user_photos_count,users_tbl.user_connection_count,users_tbl.user_reputation " +
                 ",users_tbl.user_city,users_tbl.user_country,users_tbl.user_job,users_tbl.user_is_online,users_tbl.account_is_private,friends_tbl.request_id " +
-                ",friends_tbl.sender_id,friends_tbl.is_accepted " +
+                ",friends_tbl.sender_id,friends_tbl.is_accepted,user_bio " +
                 "from users_tbl " +
                 "left join friends_tbl on (friends_tbl.sender_id=@current_user_id or friends_tbl.receiver_id=@current_user_id) " +
                 "and (friends_tbl.sender_id=@user_id or friends_tbl.receiver_id=@user_id) " +
@@ -189,7 +191,7 @@ namespace WebApplication14.Controllers
                 "@post_likes_count,@post_dislike_count,@post_reports_count,@post_share_count,@post_is_shared); " +
                 "" +
                 "select SCOPE_IDENTITY() as 'post_id'; ";
-                
+
 
             SqlCommand command = new SqlCommand();
             command.Parameters.AddWithValue("@user_id", post.User_id);
@@ -279,7 +281,9 @@ namespace WebApplication14.Controllers
                  "where i.post_id = posts_tbl.post_id  " +
                  "for xml path ('') " +
                  ") as image_urls " +
+                 ",saved_posts.saved_post_id " +
                  "" +
+                 "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                  "from posts_tbl " +
                  "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                  "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and likes_tbl.user_id=@user_id " +
@@ -298,20 +302,84 @@ namespace WebApplication14.Controllers
 
 
 
-        public static Status savePost(int post_id, int user_id, String datetime)
+
+        public static Status getSavedPosts(int user_id, String datetime, int offset)
         {
-            String query = "insert into saved_posts(user_id,post_id,saved_datetime) values " +
-               "(@user_id,@post_id,@datetime)";
+            String query = "select saved_post_id,posts_tbl.post_id,saved_datetime,saved_posts.description " +
+                "from saved_posts " +
+                "left join posts_tbl on saved_posts.post_id = posts_tbl.post_id " +
+               "where saved_posts.user_id=@user_id and saved_datetime <= @datetime " +
+               "order by saved_datetime DESC " +
+               "offset (@offset) rows " +
+               "fetch next 20 rows only ";
+              
+
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Parameters.AddWithValue("@user_id", user_id);
+            cmd.Parameters.AddWithValue("@datetime", datetime);
+            cmd.Parameters.AddWithValue("@offset", offset);
+
+
+            Status status = new Status();
+            try
+            {
+                DataTable dt = GetDataTable(query, cmd);
+                
+
+                if (dt.Rows.Count > 0)
+                {
+                    status.Json_data = "[";
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        status.Json_data += new SavedPost(dr).ToString()+",";
+                    }
+                    status.Json_data = status.Json_data.Remove(status.Json_data.Length - 1);
+                    status.Json_data += "]";
+                    status.State = 1;
+                }
+                else
+                {
+                    status.State = 0;
+                    status.Exception = "no saved posts";
+                }
+            }catch(Exception e)
+            {
+                status.State = -1;
+                status.Exception =e.Message;
+
+            }        
+            return status;
+        }
+
+
+
+
+
+        public static Status savePost(int post_id, int user_id, String datetime, String description)
+        {
+            String query = "IF not EXISTS (select saved_post_id from saved_posts where user_id=@user_id and post_id=@post_id ) " +
+                "begin " +
+                "insert into saved_posts(user_id,post_id,saved_datetime,description) values " +
+               "(@user_id,@post_id,@datetime,@description) " +
+               "select SCOPE_IDENTITY() as 'saved_post_id' " +
+               "end ";
 
 
             SqlCommand cmd = new SqlCommand();
             cmd.Parameters.AddWithValue("@post_id", post_id);
             cmd.Parameters.AddWithValue("@user_id", user_id);
             cmd.Parameters.AddWithValue("@datetime", datetime);
+            cmd.Parameters.AddWithValue("@description", description);
 
 
-            return insertingToDB(query, cmd);
+            DataTable dt = GetDataTable(query, cmd);
 
+            Status status = new Status();
+            status.State = 1;
+            status.Json_data = "{\"saved_post_id\":" + dt.Rows[0]["saved_post_id"].ToString() + "}";
+
+            return status;
         }
 
 
@@ -335,8 +403,12 @@ namespace WebApplication14.Controllers
 
         public static Status reportPost(int post_id, int user_id, int report_type, String report_datetime)
         {
-            String query = "insert into posts_report(user_id,post_id,report_type,report_datetime) values " +
-                "(@user_id,@post_id,@report_type,@report_datetime)";
+            String query = "IF not EXISTS (select report_id from posts_report where user_id=@user_id and post_id=@post_id) " +
+                "begin" +
+                "insert into posts_report(user_id,post_id,report_type,report_datetime) values " +
+                "(@user_id,@post_id,@report_type,@report_datetime) " +
+                "update posts_tbl set post_reports_count=post_reports_count+1 where post_id=@post_id " +
+                "end ";
 
 
             SqlCommand cmd = new SqlCommand();
@@ -383,15 +455,17 @@ namespace WebApplication14.Controllers
 
         public static Status deletePost(int post_id)
         {
-            String query = "delete from likes_tbl where post_id=@post_id " +
+            String query =
+                "declare @user_id int " +
+                "set @user_id=(select user_id from posts_tbl where post_id=@post_id) " +
+                "delete from likes_tbl where post_id=@post_id " +
                 "delete from dis_likes_tbl where post_id=@post_id " +
                 "delete from comments_tbl where post_id=@post_id " +
                 "delete from notification_tbl where post_id=@post_id " +
                 "delete from images where post_id=@post_id " +
+                "update posts_tbl set original_post_id=null where original_post_id=@post_id " +
                 "delete from posts_tbl where post_id=@post_id " +
                 "" +
-                "declare @user_id int" +
-                "set @user_id=(select user_id from posts_tbl where post_id=@post_id) " +
                 "update users_tbl set user_posts_count=user_posts_count-1 where user_id=@user_id ";
 
 
@@ -404,17 +478,7 @@ namespace WebApplication14.Controllers
 
 
 
-        public static Status reportPost(int post_id)
-        {
-            String query = "update posts_tbl set post_reports_count=post_reports_count+1 where post_id=@post_id";
-
-
-            SqlCommand cmd = new SqlCommand();
-            cmd.Parameters.AddWithValue("@post_id", post_id);
-
-
-            return insertingToDB(query, cmd);
-        }
+      
 
 
 
@@ -459,7 +523,7 @@ namespace WebApplication14.Controllers
             cmd.Parameters.AddWithValue("@datetime", datetime);
             cmd.Parameters.AddWithValue("@offset", offset);
 
-           
+
             return universalRetriver(query, cmd, POST_DISLIKES);
         }
 
@@ -505,8 +569,10 @@ namespace WebApplication14.Controllers
                 "where i.post_id = posts_tbl.post_id " +
                 "for xml path ('') " +
                 ") as image_urls " +
+                ",saved_posts.saved_post_id " +
                 "" +
                 "from posts_tbl " +
+                "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                 "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
@@ -522,8 +588,10 @@ namespace WebApplication14.Controllers
                 "where i.post_id = posts_tbl.post_id " +
                 "for xml path ('') " +
                 ") as image_urls " +
+                ",saved_posts.saved_post_id " +
                 "" +
                 "from posts_tbl " +
+                "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                 "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
@@ -551,8 +619,10 @@ namespace WebApplication14.Controllers
                 "where i.post_id = posts_tbl.post_id " +
                 "for xml path ('') " +
                 ") as image_urls " +
+                ",saved_posts.saved_post_id " +
                 "" +
                 "from posts_tbl " +
+                "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                 "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
@@ -568,8 +638,10 @@ namespace WebApplication14.Controllers
                 "where i.post_id = posts_tbl.post_id " +
                 "for xml path ('') " +
                 ") as image_urls " +
+                ",saved_posts.saved_post_id " +
                 "" +
                 "from posts_tbl " +
+                "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                 "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
@@ -744,7 +816,7 @@ namespace WebApplication14.Controllers
                 "begin " +
                 "update posts_tbl set post_share_count=post_share_count+1 where post_id=@original_post_id " +
                 "end; ";
-                
+
 
             SqlCommand command = new SqlCommand();
             command.Parameters.AddWithValue("@user_id", post.User_id);
@@ -788,7 +860,7 @@ namespace WebApplication14.Controllers
             else
             {
                 int post_id = int.Parse(s1.Json_data);
-                string q= "insert into shares_tbl(user_id, post_id, share_datetime) values(@user_id, @post_id, @post_date_time); ";
+                string q = "insert into shares_tbl(user_id, post_id, share_datetime) values(@user_id, @post_id, @post_date_time); ";
                 SqlCommand cmd = new SqlCommand();
                 cmd.Parameters.AddWithValue("@user_id", post.User_id);
                 cmd.Parameters.AddWithValue("@post_id", post_id);
@@ -822,7 +894,7 @@ namespace WebApplication14.Controllers
             user.User_job = reader["user_job"].ToString();
             user.User_is_online = bool.Parse(reader["user_is_online"].ToString());
             user.User_is_private = bool.Parse(reader["account_is_private"].ToString());
-
+            user.User_bio = reader["user_bio"].ToString();
 
             try
             {
@@ -850,7 +922,7 @@ namespace WebApplication14.Controllers
 
 
 
-        private static Post initPost(SqlDataReader reader)
+        private static Post initPost(SqlDataReader reader, int type)
         {
             //report id ***
 
@@ -923,6 +995,10 @@ namespace WebApplication14.Controllers
 
             post.Post_images_url = strings;
 
+            if (type == Posts_FRIENDS)
+                int.TryParse(reader["saved_post_id"].ToString(), out post.saved_post_id);
+
+
             return post;
         }
 
@@ -961,6 +1037,21 @@ namespace WebApplication14.Controllers
 
 
 
+        private static DataTable GetDataTable(string query, SqlCommand cmd)
+        {
+            SqlConnection con = new SqlConnection(ConnectionInit.ConnectionString);
+            DataTable dt = new DataTable();
+            cmd.Connection = con;
+            cmd.CommandText = query;
+            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+            adapter.Fill(dt);
+            return dt;
+        }
+
+
+
+
+
         private static Status universalRetriver(string query, SqlCommand cmd, int type)
         {
             SqlConnection con = new SqlConnection(ConnectionInit.ConnectionString);
@@ -984,12 +1075,12 @@ namespace WebApplication14.Controllers
                     {
                         if (type == Posts_FRIENDS)
                         {
-                            Post post = initPost(reader);
+                            Post post = initPost(reader, Posts_FRIENDS);
                             status.Json_data += post + ",";
                         }
                         else if (type == PROFILE_POSTS)
                         {
-                            Post post = initPost(reader);
+                            Post post = initPost(reader, PROFILE_POSTS);
                             status.Json_data += post + ",";
 
                         }

@@ -173,9 +173,19 @@ namespace WebApplication14.Controllers.API_controllers
 
         [HttpPost]
         [Route("api/Post/savePost")]
-        public Status savePost(int post_id, int user_id, String datetime)
+        public Status savePost(int post_id, int user_id, String datetime,String description)
         {
-            return PostMethods.savePost(post_id, user_id, datetime);
+            return PostMethods.savePost(post_id, user_id, datetime, description);
+        }
+
+
+
+
+        [HttpGet]
+        [Route("api/Post/getSavedPosts")]
+        public Status getSavedPosts(int user_id, String datetime,int offset)
+        {
+            return PostMethods.getSavedPosts(user_id, datetime, offset);
         }
 
 

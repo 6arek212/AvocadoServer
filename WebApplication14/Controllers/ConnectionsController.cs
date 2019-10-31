@@ -22,6 +22,8 @@ namespace WebApplication14.Controllers
         [HttpGet]
         public Status searchUsersByName(int User_id, String Text_cmp,String datetime , int offset)
         {
+            if (Text_cmp == null)
+                Text_cmp = "";
             return ConnectionMethods.onSearchingUserByName(User_id, Text_cmp,datetime,offset);
         }
 

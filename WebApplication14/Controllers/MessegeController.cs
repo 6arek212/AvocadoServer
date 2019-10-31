@@ -45,7 +45,7 @@ namespace WebApplication14.Controllers
                     String password = rt["user_passsword"].ToString();
                     String name = rt["user_first_name"].ToString();
                     Mes.To.Add(email);
-                    Mes.From = new MailAddress("Avocado");
+                    Mes.From = new MailAddress("tarik.id.10@gmail.com");
                     Mes.Subject = "Avocado: Password Recovry";
                     Mes.Body = "Hello, " + name +
                         "<br/>We recived your request to recover your Avocado account password" +

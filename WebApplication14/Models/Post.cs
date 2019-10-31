@@ -27,6 +27,7 @@ namespace WebApplication14.Controllers
         private int original_post_id;
         private int like_id;
         private int dis_like_id;
+        public int saved_post_id;
 
 
 

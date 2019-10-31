@@ -10,6 +10,9 @@ namespace WebApplication14.Controllers
 {
     public class ChatMessagesController : ApiController
     {
+
+
+
         [Route("api/ChatMessages/GettingUnreadedMessages")]
         [HttpGet]
         public Status GettingUnreadedMessages(int User_id, int Chat_id)
@@ -24,6 +27,14 @@ namespace WebApplication14.Controllers
         {
             return ChatMethods.OnGettingUserChatsWithUpdatedValues(User_id);
 
+        }
+
+
+        [Route("api/ChatMessages/deleteChat")]
+        [HttpPost]
+        public Status deleteChat(int chat_id, int user_id)
+        {
+            return ChatMethods.OnDeletingChat(chat_id,user_id);
         }
 
 
@@ -59,8 +70,6 @@ namespace WebApplication14.Controllers
         {
             if (Username == null)
                 Username = "";
-           
-     
             return ChatMethods.OnGettingUserAndChats(User_id, Username, Offset);
         }
 

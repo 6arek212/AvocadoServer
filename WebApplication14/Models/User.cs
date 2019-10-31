@@ -24,14 +24,17 @@ namespace WebApplication14.Models
         private int friend_request_id;
         private bool is_accepted;
         private int sender_id;
+        private string user_bio;
+
 
         public User()
         {
 
         }
 
-      
 
+      
+        public string User_bio { get => user_bio; set => user_bio = value; }
         public string User_first_name { get => user_first_name; set => user_first_name = value; }
         public string User_last_name { get => user_last_name; set => user_last_name = value; }
         public string User_birth_date { get => user_birth_date; set => user_birth_date = value; }

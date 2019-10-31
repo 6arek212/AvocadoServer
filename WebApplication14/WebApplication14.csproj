@@ -517,10 +517,12 @@
     <Compile Include="Controllers\Methods\LocatioMethods.cs" />
     <Compile Include="Controllers\Methods\LoginRegisterMethods.cs" />
     <Compile Include="Controllers\Methods\NotificationMethods.cs" />
+    <Compile Include="Controllers\Methods\Update_informationMethods.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\PostController.cs" />
     <Compile Include="Controllers\ConnectionInit.cs" />
     <Compile Include="Controllers\SMSCOMMS.cs" />
+    <Compile Include="Controllers\Update_informationController.cs" />
     <Compile Include="Controllers\UploadPhotoController.cs" />
     <Compile Include="login.aspx.cs">
       <DependentUpon>login.aspx</DependentUpon>
@@ -546,6 +548,7 @@
     <Compile Include="Models\NotificationCount.cs" />
     <Compile Include="Models\Post.cs" />
     <Compile Include="Controllers\Methods\PostMethods.cs" />
+    <Compile Include="Models\SavedPost.cs" />
     <Compile Include="Models\Setting.cs" />
     <Compile Include="Models\Status.cs" />
     <Compile Include="Global.asax.cs">

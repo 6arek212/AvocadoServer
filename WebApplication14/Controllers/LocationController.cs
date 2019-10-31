@@ -26,6 +26,8 @@ namespace WebApplication14.Controllers
         [HttpGet]
         public Status getNearByUsers(int user_id, float latitude, float longitude, int distance,String text_cmp, String datetime, int offset)
         {
+            if (text_cmp == null)
+                text_cmp = "";
             return LocatioMethods.OngettingNearByUsers(user_id, latitude, longitude, distance, text_cmp, datetime, offset);
         }
 

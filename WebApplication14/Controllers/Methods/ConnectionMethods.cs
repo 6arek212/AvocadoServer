@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -66,13 +67,17 @@ namespace WebApplication14.Controllers.Methods
 
         public static Status onSendingNewFriemdRequest(int Sender_id, int Receiver_id, String date_time_sent)
         {
-            string query = "insert into friends_tbl(" +
+            string query = "IF not EXISTS (select request_id from friends_tbl where (sender_id=@Sender_id or receiver_id=@Sender_id )" +
+                " and (sender_id=@Receiver_id or receiver_id=@Receiver_id )) " +
+                "begin " +
+                "insert into friends_tbl( " +
                 "sender_id ," +
                 "receiver_id ," +
                 "date_time_sent," +
                 "is_accepted)" +
                 "values(@Sender_id,@Receiver_id,@date_time_sent,@is_accepted); " +
-                "select request_id from friends_tbl where sender_id=@Sender_id and receiver_id=@Receiver_id ";
+                "select request_id from friends_tbl where sender_id=@Sender_id and receiver_id=@Receiver_id " +
+                "end ";
 
 
             SqlCommand command = new SqlCommand();
@@ -82,7 +87,36 @@ namespace WebApplication14.Controllers.Methods
             command.Parameters.AddWithValue("@is_accepted", false);
 
 
-            return insertingToDBandRetunIdentity(query, command);
+
+            DataTable dt=GetDataTable(query, command);
+            Status status = new Status();
+
+            if (dt.Rows.Count > 0)
+            {
+
+                status.State = 1;
+                status.Json_data = "{\"request_id\":" + dt.Rows[0]["request_id"].ToString()+"}";
+
+            }
+            else
+            {
+                status.State = 0;
+                status.Exception = "theres is already a friend request";
+            }
+            return status;
+        }
+
+
+
+        private static DataTable GetDataTable(string query, SqlCommand cmd)
+        {
+            SqlConnection con = new SqlConnection(ConnectionInit.ConnectionString);
+            DataTable dt = new DataTable();
+            cmd.Connection = con;
+            cmd.CommandText = query;
+            SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+            adapter.Fill(dt);
+            return dt;
         }
 
 
@@ -483,13 +517,13 @@ namespace WebApplication14.Controllers.Methods
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 if (reader.HasRows)
+                {
                     if (reader.Read())
                     {
-                        status.Json_data ="{\"request_id\":"+ reader.GetInt32(0)+"}";
+                        status.Json_data = "{\"request_id\":" + reader.GetInt32(0) + "}";
                     }
 
-
-
+                }
 
                 status.State = 1;
                 status.Exception = "Done";
