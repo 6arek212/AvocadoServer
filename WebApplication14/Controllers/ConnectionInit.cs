@@ -301,6 +301,10 @@ namespace WebApplication14.Controllers
         /// <returns></returns>
         public static Status updateProfilePohotoGenderBirthDate(int User_id, String profile_photo_path, int User_gender, String User_birth_date, String user_country)
         {
+            if(profile_photo_path==null)
+            {
+                profile_photo_path = "";
+            }
 
             String query = "update users_tbl set " +
                 "user_profile_photo=@user_profile_photo , " +

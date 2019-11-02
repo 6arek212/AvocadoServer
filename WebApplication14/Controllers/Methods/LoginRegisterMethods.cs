@@ -28,7 +28,7 @@ namespace WebApplication14.Controllers.Methods
 
         // function for registering new user and giving a starting values 
 
-        public static Status OnInsertingNewUser(string user_first_name,String last_name ,string user_email, string user_passsword, String register_datetime)
+        public static Status OnInsertingNewUser(string user_first_name, String last_name, string user_email, string user_passsword, String register_datetime)
         {
             string query = "insert into users_tbl(" +
                 "user_first_name," +
@@ -132,10 +132,10 @@ namespace WebApplication14.Controllers.Methods
 
 
 
-        public static Status deleteAccount(int user_id,String password)
+        public static Status deleteAccount(int user_id, String password)
         {
 
-            string query = "if(@password=(select user_passsword from users_tbl where user_id=@user_id)) " +
+            string query = "if(@password=CONVERT(VARCHAR, (select user_passsword from users_tbl where user_id=@user_id))) " +
                 "begin " +
                 "update users_tbl set user_is_active=0 where user_id=@user_id " +
                 "end " +
@@ -175,7 +175,7 @@ namespace WebApplication14.Controllers.Methods
                 status.State = -1;
                 status.Exception = e.Message;
             }
-            
+
 
             return status;
         }
@@ -183,9 +183,11 @@ namespace WebApplication14.Controllers.Methods
 
 
 
-        private static DataTable insertToDBWithDT(String query,SqlCommand cmd)
+        private static DataTable insertToDBWithDT(String query, SqlCommand cmd)
         {
             SqlConnection con = new SqlConnection(ConnectionInit.ConnectionString);
+            cmd.Connection = con;
+            cmd.CommandText = query;
             DataTable dt = new DataTable();
             SqlDataAdapter adapter = new SqlDataAdapter(cmd);
             adapter.Fill(dt);
