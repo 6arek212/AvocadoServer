@@ -49,9 +49,12 @@ namespace WebApplication14.Controllers
         /// <returns></returns>
         public static Status onLike(int User_id, int post_id, String datetime)
         {
-            string query = "insert into likes_tbl(user_id,post_id,like_datetime)" +
+            string query = "if not exists(select 1 from likes_tbl where user_id=@user_id and post_id=@post_id) " +
+                "begin " +
+                "insert into likes_tbl(user_id,post_id,like_datetime) " +
                 "values(@user_id,@post_id,@datetime) " +
-                "select SCOPE_IDENTITY() as 'like_id' ";
+                "select SCOPE_IDENTITY() as 'like_id' " +
+                "end ";
 
 
             // String query = "EXEC OnLikingPost @user_id,@post_id,@datetime ";
@@ -101,8 +104,11 @@ namespace WebApplication14.Controllers
 
         public static Status onDeletingLike(int like_id, int post_id)
         {
-            string query = "delete from likes_tbl where like_id=@like_id; " +
-                "update posts_tbl set post_likes_count=post_likes_count-1 where post_id=@post_id ";
+            string query = "if exists(select 1 from likes_tbl where like_id=@like_id) " +
+                "begin " +
+                "delete from likes_tbl where like_id=@like_id; " +
+                "update posts_tbl set post_likes_count=post_likes_count-1 where post_id=@post_id " +
+                "end ";
 
             SqlCommand command = new SqlCommand();
             command.Parameters.AddWithValue("@like_id", like_id);
@@ -114,8 +120,11 @@ namespace WebApplication14.Controllers
 
         public static Status onDeletingDisLike(int dis_like_id, int post_id)
         {
-            string query = "delete from dis_likes_tbl where dis_like_id=@dis_like_id; " +
-                "update posts_tbl set post_dislike_count=post_dislike_count-1 where post_id=@post_id ";
+            string query = "if exists(select 1 from dis_likes_tbl where dis_like_id=@dis_like_id) " +
+                "begin " +
+                "delete from dis_likes_tbl where dis_like_id=@dis_like_id; " +
+                "update posts_tbl set post_dislike_count=post_dislike_count-1 where post_id=@post_id " +
+                "end ";
 
             SqlCommand command = new SqlCommand();
             command.Parameters.AddWithValue("@dis_like_id", dis_like_id);
@@ -123,6 +132,9 @@ namespace WebApplication14.Controllers
 
             return insertingToDB(query, command);
         }
+
+
+
 
 
 
@@ -239,9 +251,12 @@ namespace WebApplication14.Controllers
 
 
 
-        public static Status OnGettingProfilePosts(int user_id, String datetime, int offset)
+        public static Status OnGettingProfilePosts(int user_id, int incomingUserId, String datetime, int offset)
         {
-            String query = "select posts_tbl.* ,users_tbl.user_first_name, users_tbl.user_last_name ,like_id,user_profile_photo" +
+            String query = "";
+            if (user_id == incomingUserId)
+            {
+                query = "select posts_tbl.* ,users_tbl.user_first_name, users_tbl.user_last_name ,like_id,user_profile_photo" +
                 ",dis_like_id , " +
                 "(select CAST(i.image_url as nvarchar(MAX))  + ',' " +
                 "from images i " +
@@ -258,12 +273,35 @@ namespace WebApplication14.Controllers
                 "order by post_date_time DESC " +
                 "offset (@offset) rows " +
                 "fetch next (20) rows only ";
+            }
+            else
+            {
+                query = "select posts_tbl.* ,users_tbl.user_first_name, users_tbl.user_last_name ,like_id,user_profile_photo" +
+                ",dis_like_id , " +
+                "(select CAST(i.image_url as nvarchar(MAX))  + ',' " +
+                "from images i " +
+                "where i.post_id = posts_tbl.post_id " +
+                "for xml path ('') " +
+                ") as image_urls " +
+                "" +
+                "from posts_tbl " +
+                "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
+                "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and likes_tbl.user_id=@user_id " +
+                "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
+                "where posts_tbl.user_id=@incominguserId " +
+                "and posts_tbl.post_date_time<=@datetime " +
+                "order by post_date_time DESC " +
+                "offset (@offset) rows " +
+                "fetch next (20) rows only ";
+            }
+
 
 
             SqlCommand cmd = new SqlCommand();
             cmd.Parameters.AddWithValue("@user_id", user_id);
             cmd.Parameters.AddWithValue("@datetime", datetime);
             cmd.Parameters.AddWithValue("@offset", offset);
+            cmd.Parameters.AddWithValue("@incominguserId", incomingUserId);
 
             return universalRetriver(query, cmd, PROFILE_POSTS);
         }
@@ -312,7 +350,7 @@ namespace WebApplication14.Controllers
                "order by saved_datetime DESC " +
                "offset (@offset) rows " +
                "fetch next 20 rows only ";
-              
+
 
 
             SqlCommand cmd = new SqlCommand();
@@ -325,14 +363,14 @@ namespace WebApplication14.Controllers
             try
             {
                 DataTable dt = GetDataTable(query, cmd);
-                
+
 
                 if (dt.Rows.Count > 0)
                 {
                     status.Json_data = "[";
                     foreach (DataRow dr in dt.Rows)
                     {
-                        status.Json_data += new SavedPost(dr).ToString()+",";
+                        status.Json_data += new SavedPost(dr).ToString() + ",";
                     }
                     status.Json_data = status.Json_data.Remove(status.Json_data.Length - 1);
                     status.Json_data += "]";
@@ -343,12 +381,13 @@ namespace WebApplication14.Controllers
                     status.State = 0;
                     status.Exception = "no saved posts";
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 status.State = -1;
-                status.Exception =e.Message;
+                status.Exception = e.Message;
 
-            }        
+            }
             return status;
         }
 
@@ -455,9 +494,12 @@ namespace WebApplication14.Controllers
 
         public static Status deletePost(int post_id)
         {
-            String query =
+            String query = "if exists(select 1 from posts_tbl where post_id=post_id) " +
+                "begin " +
                 "declare @user_id int " +
                 "set @user_id=(select user_id from posts_tbl where post_id=@post_id) " +
+                "delete from posts_hidden_tbl where post_id=@post_id " +
+                "delete from saved_posts where post_id=@post_id " +
                 "delete from likes_tbl where post_id=@post_id " +
                 "delete from dis_likes_tbl where post_id=@post_id " +
                 "delete from comments_tbl where post_id=@post_id " +
@@ -466,7 +508,8 @@ namespace WebApplication14.Controllers
                 "update posts_tbl set original_post_id=null where original_post_id=@post_id " +
                 "delete from posts_tbl where post_id=@post_id " +
                 "" +
-                "update users_tbl set user_posts_count=user_posts_count-1 where user_id=@user_id ";
+                "update users_tbl set user_posts_count=user_posts_count-1 where user_id=@user_id " +
+                "end ";
 
 
             SqlCommand cmd = new SqlCommand();
@@ -478,7 +521,7 @@ namespace WebApplication14.Controllers
 
 
 
-      
+
 
 
 

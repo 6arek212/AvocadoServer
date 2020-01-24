@@ -90,9 +90,9 @@ namespace WebApplication14.Controllers.API_controllers
 
         [HttpGet]
         [Route("api/Post/getProfilePosts")]
-        public Status getProfilePosts(int user_id, String datetime, int offset)
+        public Status getProfilePosts(int user_id, String datetime,int incomingUserId, int offset)
         {
-            return PostMethods.OnGettingProfilePosts(user_id, datetime, offset);
+            return PostMethods.OnGettingProfilePosts(user_id, incomingUserId, datetime, offset);
         }
 
 

@@ -34,9 +34,12 @@ namespace WebApplication14.Controllers.Methods
 
         public static Status onDeleteFriend(int request_id, int u1, int u2)
         {
-            string query = "delete from friends_tbl where request_id=@request_id " +
+            string query = "if exists(select 1 from friends_tbl where request_id=@request_id) " +
+                "begin " +
+                "delete from friends_tbl where request_id=@request_id " +
                 "update users_tbl set user_connection_count=user_connection_count-1 where user_id=@u1 " +
-                "update users_tbl set user_connection_count=user_connection_count-1 where user_id=@u2 ";
+                "update users_tbl set user_connection_count=user_connection_count-1 where user_id=@u2 " +
+                "end ";
 
 
             SqlCommand cmd = new SqlCommand();

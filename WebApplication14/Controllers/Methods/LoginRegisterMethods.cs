@@ -98,7 +98,7 @@ namespace WebApplication14.Controllers.Methods
         //     1-private account       2-location 
         public static Status settings(int user_id, bool state, int type)
         {
-            string query = "if(@type=1) " +
+            string query = "if(@type=2) " +
                 "begin " +
                 "update users_tbl set user_location_swich=@state where user_id=@user_id " +
                 "end " +
