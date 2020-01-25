@@ -21,12 +21,31 @@ namespace WebApplication14.Controllers.Methods
 
 
 
-        public static Status onDeleteFriendRequest(int request_id)
+        public static Status onDeleteFriendRequest(int request_id, int user_id)
         {
-            string query = "delete from friends_tbl where request_id=@request_id ";
+            string query = "if((select is_accepted from friends_tbl where request_id=@request_id)!=1) " +
+                "begin " +
+                "delete from friends_tbl where request_id=@request_id; " +
+                "if((select user_id_sent_notification from notification_tbl where request_id=@request_id)=@user_id) " +
+                "begin " +
+                "delete from notification_tbl where request_id=@request_id " +
+                "end " +
+                "end " +
+                "else " +
+                "begin " +
+                "declare @u1 int ,@u2 int " +
+                "delete from friends_tbl where request_id=@request_id " +
+                "set @u1=(select sender_id from friends_tbl where request_id=@request_id) " +
+                "set @u2=(select receiver_id from friends_tbl where request_id=@request_id) " +
+                "update users_tbl set user_connection_count=user_connection_count-1 where user_id=@u1 " +
+                "update users_tbl set user_connection_count=user_connection_count-1 where user_id=@u2 " +
+                "end ";
 
             SqlCommand cmd = new SqlCommand();
             cmd.Parameters.AddWithValue("@request_id", request_id);
+            cmd.Parameters.AddWithValue("@user_id", user_id);
+
+
             return insertingToDB(query, cmd);
         }
 
@@ -179,13 +198,16 @@ namespace WebApplication14.Controllers.Methods
 
         public static Status onAcceptingFriendRequest(int request_id, String date_time_accepted)
         {
-            string query = "update friends_tbl set is_accepted=@is_accepted , date_time_accepted=@date_time_accepted " +
+            string query = "if ((select is_accepted from friends_tbl where request_id=@request_id)!=1) " +
+                "begin " +
+                "update friends_tbl set is_accepted=@is_accepted , date_time_accepted=@date_time_accepted " +
                 "where request_id=@request_id; "+
                 "declare @u1 int ,@u2 int " +
                 "set @u1=(select sender_id from friends_tbl where request_id=@request_id) " +
                 "set @u2=(select receiver_id from friends_tbl where request_id=@request_id) " +
                 "update users_tbl set user_connection_count=user_connection_count+1 where user_id=@u1 " +
-                "update users_tbl set user_connection_count=user_connection_count+1 where user_id=@u2 ";
+                "update users_tbl set user_connection_count=user_connection_count+1 where user_id=@u2 " +
+                "end ";
                 
 
             SqlCommand command = new SqlCommand();
@@ -334,19 +356,15 @@ namespace WebApplication14.Controllers.Methods
 
 
 
-
-
         private static UserSearch initUserSearch(SqlDataReader reader)
         {
             UserSearch usersearch = new UserSearch();
             usersearch.User_id = reader.GetInt32(0);
-            usersearch.User_first_name = reader.GetString(1);
-            usersearch.User_last_name = reader.GetString(2);
-            usersearch.User_profile_photo = reader.GetString(3);
-            usersearch.User_city = reader.GetString(4);
-            usersearch.User_country = reader.GetString(5);
-
-
+            usersearch.User_first_name = reader["user_first_name"].ToString();
+            usersearch.User_last_name = reader["user_last_name"].ToString();
+            usersearch.User_profile_photo = reader["user_profile_photo"].ToString();
+            usersearch.User_city = reader["user_city"].ToString();
+            usersearch.User_country = reader["user_country"].ToString();
 
             try
             {
@@ -361,9 +379,7 @@ namespace WebApplication14.Controllers.Methods
 
             }
 
-
             return usersearch;
-
         }
 
 

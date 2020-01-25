@@ -23,17 +23,17 @@ namespace WebApplication14.Controllers
         public Status searchUsersByName(int User_id, String Text_cmp,String datetime , int offset)
         {
             if (Text_cmp == null)
-                Text_cmp = "";
-            return ConnectionMethods.onSearchingUserByName(User_id, Text_cmp,datetime,offset);
+                return ConnectionMethods.onSearchingUserByName(User_id, "", datetime, offset);
+            return ConnectionMethods.onSearchingUserByName(User_id, Text_cmp, datetime, offset);
         }
 
 
 
         [Route("api/Connections/deleteFriendRequest")]
         [HttpGet]
-        public Status deleteFriendRequest(int Request_id)
+        public Status deleteFriendRequest(int Request_id,int user_id)
         {
-            return ConnectionMethods.onDeleteFriendRequest(Request_id);
+            return ConnectionMethods.onDeleteFriendRequest(Request_id,user_id);
         }
 
 

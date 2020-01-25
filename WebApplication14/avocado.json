@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "project-avocado-ab26a",
+  "private_key_id": "e0ca448c7feff7a371315e159dd8d2bfeac8471e",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCSZyOgccL8EEPE\nII+ihQiQ/Xj/7V95/hHUnVXLw3A5Tfy2nORTDPwXloLqvltg/OUL/SbI+ju6j87f\nRId4LN9kTyCpM79EJdONS+ME0vE0B9a5lpwhFuzUnGZzVU1ICM+t5MqHN1wyjp3Y\n7o8UPD/dDCkyJ7KsLqD2jxAkej2/bH0YfuhL5P9I8cJ9RqnebZmjo/55fuDyJY+q\n9WWNxyuyItYDYrPjeHE97FK51JcSJCfkc92G+V0N72gizTuGhMu5qkdqV4tdWIiM\n98nQhGS5BZVq1BKlTGqElBrhh44Qz00fIp3HSmsl6DMIWPLDzPK6A5z6pyuFsJqz\nYMKSRrx3AgMBAAECggEAPIGW5lEN+loIf87LPipII5A2iWND0enQ2bPayRdxUqWq\nG5jU/oP/zgnc+oKIxplOWnmaJXbR56VWpMywRlkZTF4ti/CAjHwrphpmbVB28n+I\n3XPi/AP7BlXLO8BV678EggRsNZ0KJDTwBL93b7AE3ukPP5TLkcDFspDm5YSF744Z\nHqhxuiub0cNDyuzYciizevLPsOZx/XFXW1KQvgPcvS06vKU9M21xlEe/ARjenFgo\ng+uG1S4bPdscx0+EBdy058PFaA35vs/mMCnddOdECzjVnk/Yt1PcXycJY9nPrkdj\nBxUlU63Gk5b8uTJPG2gJXsitNDNhb9PB2wTm+iwX5QKBgQDLfPT6057pPgJOVDBE\nM5MPBkNCHLycUWcpXvCPKqEU19GHdOMWIksQQqDobU3iJMZhGpwLmROPSorKjV0u\ncUG1eZuaKewhpmdKcwz+8u4CbHed596b9uLkSsLK8/I0QZjdTRk8gHGhmwQNEhGz\nLaDN4rKbTK8EAgiuS5VHTwNrEwKBgQC4LvVwqmzdrMTNmBD5IWX7zhyu7MouGLHq\nfodacsaj740CJscDw3ye3kZ284lLZNYLSuTmCkzXMQhL17zQPpxE7Bj3x11/V36X\nLUJej/u+L+h2VMKOqbgCFC/oXR6HxEk4Bzp0C2GksTUKiV9cdE+W3vsvxDjkNmlL\ntlghTCWRjQKBgAeUQueoxC150soqFpYjuaGAoTawLVJBMe93isw6UT+efj5mWyLy\n6grUAHxHvfPjXMQ3IoLIE9NtelfrBgJ503G38tS+JP5n3UcHm/9O+xB6C8aE4WS7\nwF2ybyjyBx5tJw1vFraLLjBPvsnh12juFSQ2AmMIayhiDwK26/t49O6jAoGAaDVp\neQ1z+xg9YXWgZNSYtxeu8unWmq4uO9bLDknSSf7HcWgvQdnhMKHijHrOO3IaCNmf\nGOjLARYk84RkuA40rGpI1ihepiYC4dYhrw8YCEti41Cho8Yy7jotwPKuy3IrWx/7\n2px16pC4yfVflxfX0CzpQeVrqvN+L/BDfNNwjiECgYBYNWg2XeGyDAVTrmYul7UI\n/9sEAMv9MdEumZ89RApXFCF6ixpbAplI+fFZSqnuBXIxAfXaF6eV4hcVAMBYAuc7\n3l5vlOeCi6VbOtJBhFNjMNSljBIRBI/hwEv9JmWy1jASzK/LuDgfTCe4V78F4Kpw\npa6OgNEeGh9JXnN3pffHew==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-9k5rw@project-avocado-ab26a.iam.gserviceaccount.com",
+  "client_id": "118165919691132979322",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-9k5rw%40project-avocado-ab26a.iam.gserviceaccount.com"
+}

@@ -40,6 +40,8 @@ namespace WebApplication14.Controllers.Methods
                 "and " +
                 "users_tbl.user_is_active=1 " +
                 "and " +
+                "user_location_swich=1 " +
+                "and " +
                 "user_current_location.STDistance( 'POINT(' + cast(@latitude as nvarchar) + ' ' + cast(@longitude as nvarchar) + ')')/1000 < @distance  " +
                 "ORDER BY user_current_location.STDistance( 'POINT(' + cast(@latitude as nvarchar) + ' ' + cast(@longitude as nvarchar) + ')') ASC " +
                 "offset (@offset) rows " +
@@ -85,18 +87,15 @@ namespace WebApplication14.Controllers.Methods
 
 
 
-
-
-
         private static UserSearch initUserSearch(SqlDataReader reader)
         {
             UserSearch usersearch = new UserSearch();
             usersearch.User_id = reader.GetInt32(0);
-            usersearch.User_first_name = reader.GetString(1);
-            usersearch.User_last_name = reader.GetString(2);
-            usersearch.User_profile_photo = reader.GetString(3);
-            usersearch.User_city = reader.GetString(4);
-            usersearch.User_country = reader.GetString(5);
+            usersearch.User_first_name = reader["user_first_name"].ToString();
+            usersearch.User_last_name = reader["user_last_name"].ToString();
+            usersearch.User_profile_photo = reader["user_profile_photo"].ToString();
+            usersearch.User_city = reader["user_city"].ToString();
+            usersearch.User_country = reader["user_country"].ToString();
 
 
 

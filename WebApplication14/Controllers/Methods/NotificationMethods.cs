@@ -13,6 +13,17 @@ namespace WebApplication14.Controllers.Methods
 
 
 
+        public static Status updateToken(string token,int user_id)
+        {
+            String query = "update users_tbl set token=@token where user_id=@user_id;";
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Parameters.AddWithValue("@token", token);
+            cmd.Parameters.AddWithValue("@user_id", user_id);
+            return universalRetriver(query, cmd, 55);
+        }
+
+
         public static Status getUserNotification(int user_id, String datetime,int offset)
         {
             //need to retun chat_id 
