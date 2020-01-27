@@ -34,9 +34,9 @@ namespace WebApplication14.Controllers.Methods
                 "else " +
                 "begin " +
                 "declare @u1 int ,@u2 int " +
-                "delete from friends_tbl where request_id=@request_id " +
                 "set @u1=(select sender_id from friends_tbl where request_id=@request_id) " +
                 "set @u2=(select receiver_id from friends_tbl where request_id=@request_id) " +
+                "delete from friends_tbl where request_id=@request_id " +
                 "update users_tbl set user_connection_count=user_connection_count-1 where user_id=@u1 " +
                 "update users_tbl set user_connection_count=user_connection_count-1 where user_id=@u2 " +
                 "end ";
@@ -299,7 +299,8 @@ namespace WebApplication14.Controllers.Methods
         //      "fetch next (@ROWS_FOR_COMMENTS) rows only "
         public static Status onSearchingUserByName(int user_id, String text_cmp, String datetime, int offset)
         {
-            String query = "select " +
+            String query = 
+                "select " +
                 "users_tbl.user_id ," +
                 "users_tbl.user_first_name , " +
                 "users_tbl.user_last_name , " +
@@ -314,7 +315,7 @@ namespace WebApplication14.Controllers.Methods
                 "or users_tbl.user_id=friends_tbl.receiver_id) " +
                 "and (friends_tbl.receiver_id=@user_id or friends_tbl.sender_id=@user_id) " +
                 "where user_id!=@user_id " +
-                "and (CONVERT(VARCHAR,users_tbl.user_first_name)+' '+CONVERT(VARCHAR,users_tbl.user_last_name)) like @text_cmp+'%' " +
+                "and (CONVERT(Nvarchar,users_tbl.user_first_name)+' '+CONVERT(Nvarchar,users_tbl.user_last_name)) like @text_cmp+'%' " +
                 "and users_tbl.user_is_active=1 " +
                 "and register_datetime<@datetime " +
                 "order by users_tbl.register_datetime " +
@@ -325,10 +326,9 @@ namespace WebApplication14.Controllers.Methods
             SqlCommand command = new SqlCommand();
 
             command.Parameters.AddWithValue("@user_id", user_id);
-            command.Parameters.AddWithValue("@text_cmp", text_cmp);
             command.Parameters.AddWithValue("@datetime", datetime);
             command.Parameters.AddWithValue("@offset", offset);
-
+            command.Parameters.Add("@text_cmp", SqlDbType.NVarChar,text_cmp.Length,text_cmp).Value = text_cmp;
 
 
             return universalRetriver(query, command, CONNECTIONS);

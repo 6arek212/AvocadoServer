@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -15,7 +16,6 @@ namespace WebApplication14.Controllers.Methods
         public static Status OngettingNearByUsers(int user_id, float latitude, float longitude, int distance,String text_cmp, String datetime,int offset)
         {
             String query = "DECLARE @g1 geography = 'POINT(' + cast(@latitude as nvarchar) + ' ' + cast(@longitude as nvarchar) + ')' " +
-                "" +
                 "SELECT " +
                 "users_tbl.user_id, " +
                 "users_tbl.user_first_name," +
@@ -34,7 +34,7 @@ namespace WebApplication14.Controllers.Methods
                 "WHERE " +
                 "user_current_location is not NULL and user_id != @user_id " +
                 "and " +
-                "(CONVERT(VARCHAR,users_tbl.user_first_name)+' '+CONVERT(VARCHAR,users_tbl.user_last_name)) like @text_cmp+'%'  " +
+                "(CONVERT(Nvarchar,users_tbl.user_first_name)+' '+CONVERT(Nvarchar,users_tbl.user_last_name)) like @text_cmp+'%'  " +
                 "and " +
                 "users_tbl.register_datetime <= @datetime " +
                 "and " +
@@ -55,7 +55,7 @@ namespace WebApplication14.Controllers.Methods
             command.Parameters.AddWithValue("@distance ", distance);
             command.Parameters.AddWithValue("@datetime ", datetime);
             command.Parameters.AddWithValue("@offset ", offset);
-            command.Parameters.AddWithValue("@text_cmp ", text_cmp);
+            command.Parameters.Add("@text_cmp", SqlDbType.NVarChar, text_cmp.Length, text_cmp).Value = text_cmp;
 
 
 

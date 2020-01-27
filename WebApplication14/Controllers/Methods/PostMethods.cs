@@ -49,11 +49,14 @@ namespace WebApplication14.Controllers
         /// <returns></returns>
         public static Status onLike(int User_id, int post_id, String datetime)
         {
-            string query = "if not exists(select 1 from likes_tbl where user_id=@user_id and post_id=@post_id) " +
+            string query = "if not exists(select 1 from dis_likes_tbl where user_id=@user_id and post_id=@post_id) " +
+                "begin " +
+                "if not exists(select 1 from likes_tbl where user_id=@user_id and post_id=@post_id) " +
                 "begin " +
                 "insert into likes_tbl(user_id,post_id,like_datetime) " +
                 "values(@user_id,@post_id,@datetime) " +
                 "select SCOPE_IDENTITY() as 'like_id' " +
+                "end " +
                 "end ";
 
 
@@ -87,9 +90,15 @@ namespace WebApplication14.Controllers
         /// <returns></returns>
         public static Status onDisLike(int User_id, int post_id, String datetime)
         {
-            string query = "insert into dis_likes_tbl(user_id,post_id,dis_like_datetime)" +
+            string query = "if not exists(select 1 from likes_tbl where user_id=@user_id and post_id=@post_id) " +
+                "begin " +
+                "if not exists(select 1 from dis_likes_tbl where user_id=@user_id and post_id=@post_id) " +
+                "begin " +
+                "insert into dis_likes_tbl(user_id,post_id,dis_like_datetime) " +
                 "values(@user_id,@post_id,@datetime) " +
-                "select SCOPE_IDENTITY() as 'like_id' ";
+                "select SCOPE_IDENTITY() as 'like_id' " +
+                "end " +
+                "end ";
 
             SqlCommand command = new SqlCommand();
             command.Parameters.AddWithValue("@user_id", User_id);
