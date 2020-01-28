@@ -1,4 +1,5 @@
 ﻿using Json.Net;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -222,7 +223,11 @@ namespace WebApplication14.Controllers.Methods
             {
                 st.State = 1;
                 st.Exception = "Done";
-                st.Json_data = JsonNet.Serialize(dt); ;
+
+                string JSONresult;
+                JSONresult = JsonConvert.SerializeObject(dt);
+                st.Json_data = JSONresult;
+
             }
 
             return st;

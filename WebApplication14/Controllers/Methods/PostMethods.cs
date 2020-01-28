@@ -275,7 +275,7 @@ namespace WebApplication14.Controllers
                 "" +
                 "from posts_tbl " +
                 "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
-                "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and likes_tbl.user_id=@user_id " +
+                "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
                 "where posts_tbl.user_id=@user_id " +
                 "and posts_tbl.post_date_time<=@datetime " +
@@ -295,7 +295,7 @@ namespace WebApplication14.Controllers
                 "" +
                 "from posts_tbl " +
                 "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
-                "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and likes_tbl.user_id=@user_id " +
+                "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +         
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
                 "where posts_tbl.user_id=@incominguserId " +
                 "and posts_tbl.post_date_time<=@datetime " +
@@ -505,6 +505,13 @@ namespace WebApplication14.Controllers
         {
             String query = "if exists(select 1 from posts_tbl where post_id=post_id) " +
                 "begin " +
+                "" +
+                "if((select post_is_shared from posts_tbl where post_id=@post_id)=1) " +
+                "begin " +
+                "declare @originalPostId int=(select original_post_id from posts_tbl where post_id=@post_id) " +
+                "update posts_tbl set post_share_count=post_share_count-1 where post_id=@originalPostId " +
+                "end " +
+                "" +
                 "declare @user_id int " +
                 "set @user_id=(select user_id from posts_tbl where post_id=@post_id) " +
                 "delete from posts_hidden_tbl where post_id=@post_id " +
@@ -517,7 +524,8 @@ namespace WebApplication14.Controllers
                 "update posts_tbl set original_post_id=null where original_post_id=@post_id " +
                 "delete from posts_tbl where post_id=@post_id " +
                 "" +
-                "update users_tbl set user_posts_count=user_posts_count-1 where user_id=@user_id " +
+                "update users_tbl set user_posts_count=user_posts_count-1 where user_id=@user_id " +  
+                "" +
                 "end ";
 
 
@@ -610,9 +618,18 @@ namespace WebApplication14.Controllers
 
 
 
+        /// <summary>
+        ///  public post =1
+        ///  friends post =0 
+        /// </summary>
+        /// <param name="user_id"></param>
+        /// <param name="datetime"></param>
+        /// <param name="offset"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static Status onRequestingPosts2(int user_id, String datetime, int offset, int type)
         {
-            String query = "if(@type!=2)" +
+            String query = "if(@type=0)" +
                 "begin " +
                 "select posts_tbl.* ,users_tbl.user_first_name, users_tbl.user_last_name ,like_id, user_profile_photo , " +
                 "dis_like_id ,posts_report.report_id, " +
@@ -679,7 +696,7 @@ namespace WebApplication14.Controllers
                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
                 "left join posts_report on posts_report.post_id = posts_tbl.post_id and posts_report.user_id= @user_id " +
-                "where posts_tbl.user_id=@user_id and (posts_tbl.post_date_time <= @datetime ) " +
+                "where posts_tbl.user_id=@user_id and (posts_tbl.post_date_time <= @datetime ) and post_type=@type " +
                 "" +
                 "union all " +
                 "" +
@@ -697,13 +714,10 @@ namespace WebApplication14.Controllers
                 "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                 "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
-                "left join friends_tbl on (friends_tbl.receiver_id =posts_tbl.user_id " +
-                "or friends_tbl.sender_id=posts_tbl.user_id) " +
-                "and (friends_tbl.sender_id=@user_id or friends_tbl.receiver_id=@user_id) " +
                 "left join posts_hidden_tbl on  posts_tbl.post_id = posts_hidden_tbl.post_id " +
                 "and posts_hidden_tbl.user_id =@user_id " +
                 "left join posts_report on posts_report.post_id = posts_tbl.post_id and posts_report.user_id= @user_id " +
-                "where  friends_tbl.is_accepted=1 and posts_tbl.user_id!=@user_id " +
+                "where posts_tbl.user_id!=@user_id and post_type=@type " +
                 "and (posts_tbl.post_date_time <= @datetime ) " +
                 "and posts_hidden_tbl.user_id is null " +
                 "order by posts_tbl.post_date_time DESC " +
