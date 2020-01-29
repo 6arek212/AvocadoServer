@@ -64,17 +64,17 @@ namespace WebApplication14.Controllers.Methods
 
         public static Status update_phonenumber(String userid, String phonenumber)
         { 
-            String query = "if not exists(select user_phonenumber from users_tbl where if not exists(select user_phonenumber from users_tbl where " +
-                "(CONVERT(Nvarchar,user_phonenumber)=@phonenumber)=@phonenumber) " +
+            String query = "if not exists(select 1 from users_tbl where  " +
+                "CONVERT(Nvarchar,user_phonenumber)=@phonenumber) " +
                 "begin " +
-                "update users_tbl set user_phonenumber=@phonenumber where user_id=@userid " +
+                "update users_tbl set user_phonenumber=@phonenumber where user_id=@user_id " +
                 "select 1 " +
                 "end ";
             SqlCommand command = new SqlCommand();
 
             //parameters
             command.Parameters.AddWithValue("@phonenumber", phonenumber);
-            command.Parameters.AddWithValue("@userid", userid);
+            command.Parameters.AddWithValue("@user_id", userid);
 
             DataTable dt = getDataTable(query, command);
 
@@ -190,12 +190,28 @@ namespace WebApplication14.Controllers.Methods
                 "end ";
             SqlCommand command = new SqlCommand();
 
+
             //parameters
             command.Parameters.AddWithValue("@new_password", new_password);
             command.Parameters.AddWithValue("@userid", userid);
             command.Parameters.AddWithValue("@current_password", current_password);
 
-            return ConnectionInit.go_to_insertingToDB(query, command);
+            DataTable dt = getDataTable(query, command);
+            Status st = new Status();
+
+            if (dt.Rows.Count > 0)
+            {
+                st.State = 0;
+                st.Exception = "passwornd is incorrect";
+
+            }
+            else
+            {
+                st.State = 1;
+                st.Exception = "Done";
+            }
+
+            return st;
         }
 
 

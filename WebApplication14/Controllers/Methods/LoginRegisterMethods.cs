@@ -203,11 +203,11 @@ namespace WebApplication14.Controllers.Methods
 
         public static Status checkIfExists(string User_Email, string User_password)
         {
-            string query = "if exists( select user_id from users_tbl where CONVERT(VARCHAR, user_email)=@email " +
+            string query = "if exists( select user_id from users_tbl where (CONVERT(VARCHAR, user_email)=@email or CONVERT(VARCHAR, user_phonenumber)=@email) " +
                 "and CONVERT(VARCHAR, user_passsword)=@password and user_is_active=1 ) " +
                 "begin " +
                 "select user_id,user_first_name,user_last_name,user_profile_photo, " +
-                "user_location_swich,account_is_private from users_tbl where CONVERT(VARCHAR, user_email)=@email " +
+                "user_location_swich,account_is_private from users_tbl where (CONVERT(VARCHAR, user_email)=@email or CONVERT(VARCHAR, user_phonenumber)=@email) " +
                 "and CONVERT(VARCHAR, user_passsword)=@password " +
                 "end ";
 
