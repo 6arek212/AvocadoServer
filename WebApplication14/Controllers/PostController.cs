@@ -197,5 +197,13 @@ namespace WebApplication14.Controllers.API_controllers
             return PostMethods.removeSavedPost(saved_post_id);
         }
 
+
+        [HttpPost]
+        [Route("api/Post/updatePost")]
+        public Boolean updatePost([FromBody]PostUpdateData updatePost)
+        {
+            return PostMethods.updatePost(updatePost);
+        }
+
     }
 }

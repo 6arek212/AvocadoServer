@@ -31,12 +31,19 @@ namespace WebApplication14.Controllers.Methods
             String query = "" +
                 "if(CONVERT(VARCHAR, (select user_passsword from users_tbl where user_id = @userid))=@password) " +
                 "begin " +
+                "if not exists(select * from users_tbl where  CONVERT(VARCHAR, user_email)=@emailaddress) " +
+                "begin " +
                 "update users_tbl set user_email=@emailaddress where user_id=@userid " +
+                "end " +
+                "else " +
+                "begin " +
+                "select 'E-mail already exists' as 'data' " +
+                "end " +
                 "end " +
                 "" +
                 "else " +
                 "begin " +
-                "select 'incorrect password' " +
+                "select 'incorrect password' as 'data' " +
                 "end ";
 
             SqlCommand command = new SqlCommand();
@@ -51,7 +58,7 @@ namespace WebApplication14.Controllers.Methods
             if (dt.Rows.Count > 0)
             {
                 st.State = 0;
-                st.Exception = "password not match";
+                st.Exception = dt.Rows[0]["data"].ToString();
             }
             else
             {

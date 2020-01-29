@@ -575,6 +575,7 @@
     <Compile Include="Models\NotificationCount.cs" />
     <Compile Include="Models\Post.cs" />
     <Compile Include="Controllers\Methods\PostMethods.cs" />
+    <Compile Include="Models\PostUpdateData.cs" />
     <Compile Include="Models\SavedPost.cs" />
     <Compile Include="Models\Setting.cs" />
     <Compile Include="Models\Status.cs" />

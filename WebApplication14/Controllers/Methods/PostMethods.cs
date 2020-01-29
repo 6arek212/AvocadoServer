@@ -333,7 +333,7 @@ namespace WebApplication14.Controllers
                  "from posts_tbl " +
                  "left join saved_posts on saved_posts.post_id = posts_tbl.post_id  and saved_posts.user_id=@user_id " +
                  "left join likes_tbl on posts_tbl.post_id=likes_tbl.post_id and likes_tbl.user_id=@user_id " +
-                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and likes_tbl.user_id=@user_id " +
+                 "left join dis_likes_tbl on posts_tbl.post_id=dis_likes_tbl.post_id and dis_likes_tbl.user_id=@user_id " +
                  "left join users_tbl on users_tbl.user_id =posts_tbl.user_id " +
                  "where posts_tbl.post_id=@post_id ";
 
@@ -430,6 +430,22 @@ namespace WebApplication14.Controllers
             return status;
         }
 
+
+
+        public static Boolean updatePost(PostUpdateData updatePost)
+        {
+            String query = "update posts_tbl set post_text=@text ,post_type=@type where post_id=@post_id ";
+
+
+            SqlCommand cmd = new SqlCommand();
+            cmd.Parameters.AddWithValue("@text", updatePost.Text);
+            cmd.Parameters.AddWithValue("@type", updatePost.Type);
+            cmd.Parameters.AddWithValue("@post_id", updatePost.Post_id);
+
+            if (insertingToDB(query, cmd).State == 1)
+                return true;
+            return false;
+        }
 
 
 
